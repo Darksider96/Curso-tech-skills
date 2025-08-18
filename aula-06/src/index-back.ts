@@ -1,201 +1,224 @@
-import express from 'express';
-import {isCNH, isCNPJ, isCPF} from 'validation-br';
-import validate from 'validation-br';
+import express, { Request, Response } from 'express';
+// import {isCNH, isCNPJ, isCPF} from 'validation-br';
+import validation from 'validation-br';
 import cep from 'cep-promise';
+import zod, { z } from 'zod';
 
 const app = express();
-const port = 3002
-app.use(express.json());
+const port = 3004;
+
 
 interface IPessoa {
-    CPF: string;
+    cpf:string;
     nome: string;
-    RG: string;
-};
+    rg: number;
+}
 
 interface IEndereco {
-    CEP: string;
-    rua: string;
+    cep: number;
+    logradouro: string;
     bairro: string;
-    cidade: string;
-    estado: string;
-};
+    localidade: string;
+    uf: string;
+}
 
-interface ICliente extends IPessoa, IEndereco { 
-    telefone: string;
+interface ICliente extends IPessoa, IEndereco {
     email: string;
-};
+}
 
 let clientes: ICliente[] = [
     {
-    CPF: '12345678909',
-    nome: 'João da Silva',
-    RG: '123456789',
-    CEP: '12345-678',
-    rua: 'Rua Exemplo',
-    bairro: 'Bairro Exemplo',
-    cidade: 'Cidade Exemplo',
-    estado: 'SP',
-    telefone: '11987654321',
-    email: 'joao@exemple.com'
+        cpf: "12345678901",
+        nome: "João Silva",
+        rg: 123456789,
+        cep: 84033106,
+        logradouro: "Rua A",
+        bairro: "PQ Pinheiros",
+        localidade: "Ponta Grossa",
+        uf: "PR",
+        email: "joao.silva@example.com"
     },
     {
-    CPF: '98765432100',
-    nome: 'Maria Oliveira',
-    RG: '987654321',
-    CEP: '87654-321',
-    rua: 'Avenida Exemplo',     
-    bairro: 'Bairro Exemplo',
-    cidade: 'Cidade Exemplo',
-    estado: 'RJ',
-    telefone: '21987654321',
-    email: 'maria@example.com'
-    }]
-
-interface cnpj {
-    cnpj: string;
-};
-
-interface cnh {
-    cnh: string;
-};
-
-interface cepverify {
-    cep: string;
-};
- 
-
-app.get('/valida-cpf/:cpf', (req, res) => {
-    const { cpf } = req.params;
-    if (validate.isCPF(cpf)) {
-        return res.send('CPF Valido');
-    }else {
-        return res.status(400).json({ error: 'CPF inválido' });
+        cpf: "98765432100",
+        nome: "Maria Oliveira",
+        rg: 987654321,
+        cep: 84033107,
+        logradouro: "Rua B",
+        bairro: "PQ Pinheiros",
+        localidade: "Ponta Grossa",
+        uf: "PR",
+        email: "maria.oliveira@example.com"
+    },
+    {
+        cpf: "12312312312",
+        nome: "Carlos Souza",
+        rg: 123123123,
+        cep: 84033108,
+        logradouro: "Rua C",
+        bairro: "PQ Pinheiros",
+        localidade: "Ponta Grossa",
+        uf: "PR",
+        email: "carlos.souza@example.com"
     }
+];
 
+const ClienteSchema = z.object({
+  cpf: z.string().min(11, "CPF deve ter no mínimo 11 caracteres."),
+  nome: z.string().min(1, "Nome é obrigatório."),
+  rg: z.number().int("RG deve ser um número inteiro."),
+  cep: z.number().int("CEP deve ser um número inteiro."),
+  logradouro: z.string().min(1, "Logradouro é obrigatório."),
+  bairro: z.string().min(1, "Bairro é obrigatório."),
+  localidade: z.string().min(1, "Localidade é obrigatória."),
+  uf: z.string().length(2, "UF deve ter 2 caracteres."),
+  email: z.string().email("Formato de e-mail inválido."),
 });
 
-
-app.get('/valida-cnpj/:cnpj', (req, res) => {
-    const { cnpj } = req.params;
-    if (validate.isCNPJ(cnpj)) {
-        return res.send('CNPF Valido');
-    }else {
-        return res.status(400).json({ error: 'CNPF inválido' });
-    }
-
+app.get("/", (req: Request, res: Response) => {
+  res.send("API de validação de CPF, CNPJ e CEP");
 });
 
-app.get('/valida-cnh/:cnh', (req, res) => {
-    const { cnh } = req.params;
-    if (validate.isCNH(cnh)) {
-        return res.send('CNH Valido');
-    }else {
-        return res.status(400).json({ error: 'CNH inválido' });
-    }
+// app.get("/valida-cpf/:cpf", async (req: Request<{ cpf : String}>, res: Response) => {git 
+//   const cpfValue = await validation.isCPF(req.params.cpf);
 
+//   if (cpfValue) {
+//     res.send("CPF válido!");
+//   } else {
+//     res.status(400).json({ error: "CPF inválido!" });
+//   }
+// });
+
+app.get("/valida-cpf/:cpf", async (req: Request, res: Response) => {
+  const { cpf } : any = req.params;
+  const cpfValue = validation.isCPF(cpf);
+
+  if (cpfValue) {
+      res.send("CPF válido!");
+  } else {
+      res.status(400).json({ error: "CPF inválido!" });
+  }
 });
 
-app.get('/valida-cep/:cep', async (req, res) => {
-    // 1. Extraia o parâmetro 'cep' corretamente da URL
-    const cepverify = req.params.cep;
+// app.get("/valida-cnpj/:cnpj", async (req: Request, res: Response) => {
+//   const cnpjValue = await validation.isCNPJ (req.params.cnpj);
 
-    try {
-        // 2. Chame a função 'cep' sem o ponto na frente e use 'await'
-        await cep(cepverify);
-        return res.send('CEP Válido');
-    } catch (error) {
-        // Se a função 'cep' falhar, significa que o CEP é inválido
-        return res.status(400).json({ error: 'CEP inválido' });
-    }
+//   if (cnpjValue) {
+//     res.send("CNPJ válido!");
+//   } else {
+//     res.status(400).json({ error: "CNPJ inválido!" });
+//   }
+// });
+
+app.get("/valida-cnpj/:cnpj", async (req: Request, res: Response) => {
+  const { cnpj } : any = req.params;
+  const cnpjValue = validation.isCNPJ(cnpj);
+
+  if (cnpjValue) {
+      res.send("CNPJ válido!");
+  } else {
+      res.status(400).json({ error: "CNPJ inválido!" });
+  }
 });
 
+// app.get("/valida-cnh/:cnh", async (req: Request, res: Response) => {
+//     const cnhValue = await validation.isCNH(req.params.cnh);
 
-app.get('/clientes', (req, res) => {
-    return res.json(clientes);
+//     if (cnhValue) {
+//         res.send("CNH válida!");
+//     } else {
+//         res.status(400).json({ error: "CNH inválida!" });
+//     }
+// });
+
+app.get("/valida-cnh/:cnh", async (req: Request, res: Response) => {
+  const { cnh } : any = req.params;
+  const cnhValue = validation.isCNH(cnh);
+
+  if (cnhValue) {
+      res.send("CNH válida!");
+  } else {
+      res.status(400).json({ error: "CNH inválida!" });
+  }
 });
 
-app.get('/clientes/:cpf', (req, res) => {
-    const { cpf } = req.params;
-    const cliente = clientes.find(c => c.CPF === cpf);
-    if (cliente) {
-        return res.json(cliente);
-    }
-    return res.status(404).json({ error: 'Cliente não encontrado' });
+// app.get("/valida-cep/:cep", async (req: Request, res: Response) => {
+//   const cepValue = await cep(req.params.cep);
+
+//   if (cepValue) {
+//     res.send("CEP valido!");
+//   } else {
+//     res.status(400).json({ error: "Erro ao buscar CEP" });
+//   }
+// });
+
+app.get("/valida-cep/:cep", async (req: Request, res: Response) => {
+  const cepValue : any = req.params.cep; 
+  const cepResponse = await cep(cepValue);   
+
+  if (cepResponse) {
+    res.send("CEP valido!");
+  } else {
+    res.status(400).json({ error: "Erro ao buscar CEP" });
+  }
 });
 
-app.post('/clientes', (req, res) => {
-    const { CPF, nome, RG, CEP, rua, bairro, cidade, estado, telefone, email } = req.body;
+app.get("/clientes", (req: Request, res: Response) => {
+  res.json(clientes);
+});
 
-    if (!validate.isCPF(CPF)) {
-        return res.status(400).json({ error: 'CPF inválido' });
+app.get("/clientes/:cpf", (req: Request, res: Response) => {
+  const cliente = clientes.find(IClientes => IClientes.cpf === String(req.params.cpf));
+  if (cliente) {
+    res.json(cliente);
+  } else {
+    res.status(404).json({ error: "Cliente não encontrado" });
+  }
+});
+
+app.post("/clientes", express.json(), (req: Request, res: Response) => {
+    const novoCliente: ICliente = req.body;
+
+    // Validação simples
+    if (!novoCliente.cpf || !novoCliente.nome || !novoCliente.email) {
+        return res.status(400).json({ error: "Dados incompletos" });
     }
-
-    const novoCliente: ICliente = {
-        CPF,
-        nome,
-        RG,
-        CEP,
-        rua,
-        bairro,
-        cidade,
-        estado,
-        telefone,
-        email
-    };
 
     clientes.push(novoCliente);
-    return res.status(201).json(novoCliente);
+    res.status(201).json(novoCliente);
 });
 
-app.delete('/clientes/:cpf', (req, res) => {
-    let deleteUser = (req.params.cpf);
-    let dadosdel = clientes.length;
-    clientes = clientes.filter(ICliente => ICliente.CPF !== deleteUser);
+app.delete("/clientes/:cpf", (req: Request, res: Response) => {
+  const { cpf } = req.params;
+  clientes = clientes.filter(cliente => cliente.cpf !== String(cpf));
+  res.status(204).send();
+});
 
-    if (clientes.length < dadosdel){
-        res.status(200).send(`Usuario ${deleteUser} deletado!`);
-      } else {
-        res.status(404).send(`Uuario ${deleteUser} não encontrado!.`);
-      }
-
-})
-
-app.put('/clientes/:cpf', (req, res) => {
+app.put("/clientes/:cpf", express.json(), (req: Request, res: Response) => {
     const { cpf } = req.params;
-    const { nome, RG, CEP, rua, bairro, cidade, estado, telefone, email } = req.body;
+    const clienteIndex = clientes.findIndex(cliente => cliente.cpf === String(cpf));
 
-    const clienteIndex = clientes.findIndex(c => c.CPF === cpf);
-    if (clienteIndex === -1) {
-        return res.status(404).json({ error: 'Cliente não encontrado' });
+    if (clienteIndex !== -1) {
+        const clienteAtualizado = { ...clientes[clienteIndex], ...req.body };
+        clientes[clienteIndex] = clienteAtualizado;
+        res.json(clienteAtualizado);
+    } else {
+        res.status(404).json({ error: "Cliente não encontrado" });
     }
-
-    if (!validate.isCPF(cpf)) {
-        return res.status(400).json({ error: 'CPF inválido' });
-    }
-
-    const clienteAtualizado: ICliente = {
-        CPF: cpf,
-        nome,
-        RG,
-        CEP,
-        rua,
-        bairro,
-        cidade,
-        estado,
-        telefone,
-        email
-    };
-
-    clientes[clienteIndex] = clienteAtualizado;
-    return res.json(clienteAtualizado);
 });
 
-
-
-
-
+clientes.push({
+        cpf: "09632146913",
+        nome: "Johnatan",
+        rg: 987654321,
+        cep: 84033107,
+        logradouro: "Rua T",
+        bairro: "PQ Pinheiros",
+        localidade: "Ponta Grossa",
+        uf: "PR",
+        email: "johnatan@example.com"
+    }
+);
 
 app.listen(port, () => {
-    console.log(`Servidor rodando na porta ${port}!`);
+  console.log(`Servidor rodando na porta ${port}`);
 });

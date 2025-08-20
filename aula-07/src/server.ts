@@ -2,19 +2,21 @@
 import express from 'express';
 import { fetchAllCountries } from './utils/api';
 import { CountryService } from './services/countryService';
-import { CountryRegion } from './types';
+import { CountryRegion, ICountry } from './types';
+import cors from 'cors';
 
 const app = express();
 const PORT = 3004;
 
 app.use(express.json());
+app.use(cors()); 
 
-// Rota principal para a busca e filtro
+
 app.get('/countries', async (req, res) => {
   try {
     // 1. Obtém todos os países da API externa
-    const allCountries = await fetchAllCountries();
-    const countryService = new CountryService(allCountries);
+    const allCountries: ICountry []= await fetchAllCountries();
+    const countryService: CountryService= new CountryService(allCountries);
 
     // 2. Extrai os parâmetros de busca e filtro da URL
     const { name, region } = req.query;

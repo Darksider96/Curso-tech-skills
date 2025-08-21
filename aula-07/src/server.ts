@@ -1,15 +1,15 @@
-// src/server.ts
 import express from 'express';
 import { fetchAllCountries } from './utils/api';
 import { CountryService } from './services/countryService';
 import { CountryRegion, ICountry } from './types';
 import cors from 'cors';
+import open from 'open'; // Adicione esta linha
 
 const app = express();
 const PORT = 3004;
 
 app.use(express.json());
-app.use(cors()); 
+app.use(cors());
 
 
 app.get('/countries', async (req, res) => {
@@ -34,7 +34,7 @@ app.get('/countries', async (req, res) => {
       }
       filteredCountries = countryService.filterByRegion(region as CountryRegion);
     }
-    
+
     // 4. Retorna a lista de países filtrada
     return res.status(200).json(filteredCountries);
 
@@ -44,7 +44,8 @@ app.get('/countries', async (req, res) => {
   }
 });
 
-// Inicia o servidor
+// Inicia o servidor e abre o navegador
 app.listen(PORT, () => {
   console.log(`Servidor rodando em http://localhost:${PORT}`);
+  open(`src/index.html`); // Adicione esta linha
 });

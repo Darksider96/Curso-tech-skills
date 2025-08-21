@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start:dev": "ts-node-dev --transpile-only --ignore-watch node_modules --respawn src/server.ts",
-    "test" : "ts-node-dev --transpile-only --ignore-watch node_modules --respawn test/repo-test.ts"
-  },
+    "start": "cross-env APP_PORT=3000 ts-node ./src/server.ts",
+  "dev": "cross-env APP_PORT=3000 ts-node-dev --respawn ./src/server.ts"
+},
+  
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Darksider96/Curso-tech-skills.git"
@@ -20,13 +21,16 @@
   "description": "",
   "devDependencies": {
     "@types/express": "^5.0.3",
+    "cross-env": "^10.0.0",
     "express": "^5.1.0",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   },
   "dependencies": {
+    "@types/dotenv": "^6.1.1",
     "@types/nedb": "^1.8.16",
+    "dotenv": "^17.2.1",
     "nedb": "^1.8.0",
     "ts-node-dev": "^2.0.0"
   }

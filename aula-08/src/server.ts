@@ -4,10 +4,16 @@ import express, { Request, Response, NextFunction } from 'express';
 import { AppError } from './error';
 import { errorHandler } from './errorMiddleware';
 import { UserRepository } from './userRepository';
-import { IUser } from './types'; // Adicione a interface IUser ao seu arquivo de tipos
+import { IUser } from './types';
+import dot from 'dotenv';
 
+// Carrega as variáveis de ambiente do arquivo .env
+dot.config();
+
+// Define a porta da aplicação, com um valor padrão de 3000
+const PORT = process.env.APP_PORT || 3000;
 const app = express();
-const port: number = 3004;
+
 
 // Instancia a camada de repositório
 const userRepository = new UserRepository();
@@ -92,9 +98,10 @@ app.delete('/users/:id', async (req: Request, res: Response, next: NextFunction)
         next(new AppError('Erro ao deletar usuário.', 500));
     }
 });
+
 // Middleware global de tratamento de erros DEVE ser o último
 app.use(errorHandler);
 
-app.listen(port, () => {
-    console.log("Api iniciada na porta: " + port);
+app.listen(PORT, () => {
+    console.log(`Api iniciada na porta: ${PORT}`);
 });

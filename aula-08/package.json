@@ -1,0 +1,37 @@
+{
+  "name": "curso-tech-skills",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "cross-env APP_PORT=3000 ts-node ./src/server.ts",
+  "dev": "cross-env APP_PORT=3000 ts-node-dev --respawn ./src/server.ts"
+},
+  
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Darksider96/Curso-tech-skills.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Darksider96/Curso-tech-skills/issues"
+  },
+  "homepage": "https://github.com/Darksider96/Curso-tech-skills#readme",
+  "description": "",
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "cross-env": "^10.0.0",
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@types/dotenv": "^6.1.1",
+    "@types/nedb": "^1.8.16",
+    "dotenv": "^17.2.1",
+    "nedb": "^1.8.0",
+    "ts-node-dev": "^2.0.0"
+  }
+}

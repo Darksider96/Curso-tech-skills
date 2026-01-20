@@ -1,0 +1,30 @@
+{
+  "name": "aula-07",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start:dev": "ts-node-dev --transpile-only --ignore-watch node_modules --respawn src/server.ts",
+    "start": "tsc && node dist/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "@yusifaliyevpro/countries": "^2.2.2",
+    "express": "^5.1.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/open": "^6.1.0",
+    "axios": "^1.11.0",
+    "cor": "^0.0.0",
+    "cors": "^2.8.5",
+    "open": "^10.2.0"
+  }
+}
